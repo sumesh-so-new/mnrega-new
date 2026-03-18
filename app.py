@@ -69,6 +69,8 @@ def build_chart_html(labels: list, values: list, y_label: str, chart_type: str) 
     datalabel_anchor = "" if is_multicolor else '"end"'
     datalabel_align  = "" if is_multicolor else '"top"'
 
+    canvas_style = 'height:620px !important;' if is_multicolor else ''
+
     return f"""<!DOCTYPE html>
 <html>
 <head>
@@ -80,18 +82,34 @@ def build_chart_html(labels: list, values: list, y_label: str, chart_type: str) 
     body {{
       background: #0e1117;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
       padding: 20px;
     }}
-    .wrap {{ width: 100%; max-width: 920px; }}
+    .wrap {{ width: 100%; max-width: 1100px; }}
+    .download-btn {{
+      margin-top: 16px;
+      padding: 10px 28px;
+      background: #e03131;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      letter-spacing: 0.5px;
+      transition: background 0.2s;
+    }}
+    .download-btn:hover {{ background: #c92a2a; }}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <canvas id="chart"></canvas>
+  <canvas id="chart" style="{canvas_style}"></canvas>
 </div>
+<button class="download-btn" onclick="downloadChart()">⬇ Download Chart</button>
 <script>
   Chart.register(ChartDataLabels);
 
@@ -102,6 +120,22 @@ def build_chart_html(labels: list, values: list, y_label: str, chart_type: str) 
   const yLabel      = {json.dumps(y_label)};
   const isMulti     = {'true' if is_multicolor else 'false'};
   const showLabels  = values.length <= 20;
+
+  function downloadChart() {{
+    const canvas = document.getElementById("chart");
+    // Draw on a white background so PNG looks clean
+    const exportCanvas = document.createElement("canvas");
+    exportCanvas.width  = canvas.width;
+    exportCanvas.height = canvas.height;
+    const ctx = exportCanvas.getContext("2d");
+    ctx.fillStyle = "#0e1117";
+    ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+    ctx.drawImage(canvas, 0, 0);
+    const link = document.createElement("a");
+    link.download = "chart.jpg";
+    link.href = exportCanvas.toDataURL("image/jpeg", 0.95);
+    link.click();
+  }}
 
   new Chart(document.getElementById("chart"), {{
     type: "{cjs_type}",
@@ -122,6 +156,7 @@ def build_chart_html(labels: list, values: list, y_label: str, chart_type: str) 
     options: {{
       {index_axis}
       responsive: true,
+      maintainAspectRatio: {'false' if is_multicolor else 'true'},
       plugins: {{
         legend: {{
           display: isMulti,
@@ -172,6 +207,29 @@ def format_table_name(table_name: str) -> str:
     return f"{readable} ({year})" if year else readable
 
 
+# ── SQL FIXER: wrap aggregate args with numeric cast for TEXT columns ──────────
+import re
+
+def fix_sql_text_aggregates(sql: str) -> str:
+    """
+    Rewrites SUM(col), AVG(col), MAX(col), MIN(col) → SUM(NULLIF(col,'')::NUMERIC)
+    so they work even when the column is stored as TEXT in PostgreSQL.
+    Also rewrites plain ORDER BY col and comparisons like col > 100.
+    """
+    agg_pattern = re.compile(
+        r'\b(SUM|AVG|MIN|MAX)\s*\(\s*(?!NULLIF)([^()]+?)\s*\)',
+        re.IGNORECASE
+    )
+    def replace_agg(m):
+        func, inner = m.group(1), m.group(2).strip()
+        # Skip if already cast
+        if '::' in inner or 'CAST(' in inner.upper():
+            return m.group(0)
+        return f"{func.upper()}(NULLIF({inner}, '')::NUMERIC)"
+
+    return agg_pattern.sub(replace_agg, sql)
+
+
 # ── PAGE CONFIG ────────────────────────────────────────────────────────────────
 st.set_page_config(page_title="MGNREGA Text-to-SQL", page_icon="🔍", layout="wide")
 
@@ -189,7 +247,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── HEADER ─────────────────────────────────────────────────────────────────────
-st.title("🔍 MGNREGA ANALYSIS")
+st.title("🔍 MGNREGA Text-to-SQL Explorer")
 st.caption("Ask questions in plain English — get live data from your PostgreSQL database.")
 
 # ── SIDEBAR ────────────────────────────────────────────────────────────────────
@@ -285,6 +343,7 @@ if st.session_state.run_query_flag:
         if gen_error:
             st.session_state.current_error = f"SQL generation failed: {gen_error}"
         else:
+            sql = fix_sql_text_aggregates(sql)   # ← cast TEXT cols before aggregating
             st.session_state.current_sql = sql
             with st.spinner("⚙️ Executing query…"):
                 df, exec_error = run_query(sql)
@@ -321,19 +380,20 @@ if st.session_state.current_df is not None:
     row_count = len(df)
     col_count = len(df.columns)
 
-    st.subheader("📊 Results")
-    m1, m2 = st.columns(2)
-    m1.metric("Rows returned", row_count)
-    m2.metric("Columns",       col_count)
+    # st.subheader("📊 Results")
+    # m1, m2 = st.columns(2)
+    # m1.metric("Rows returned", row_count)
+    # m2.metric("Columns",       col_count)
 
     if row_count == 0:
         st.info("Query executed successfully but returned no rows.")
     else:
-        tab1, tab2, tab3 = st.tabs(["📋 Table", "📈 Chart", "📥 Download"])
+        # tab1, tab2, tab3 = st.tabs(["📋 Table", "📈 Chart", "📥 Download"])
+        tab2 = st.tabs(["📈 Chart"])[0]
 
         # ── TABLE ──────────────────────────────────────────────────────────────
-        with tab1:
-            st.dataframe(df, use_container_width=True, height=420)
+        # with tab1:
+        #     st.dataframe(df, use_container_width=True, height=420)
 
         # ── CHART (iframe + Chart.js) ──────────────────────────────────────────
         with tab2:
@@ -357,18 +417,19 @@ if st.session_state.current_df is not None:
                 values  = [round(float(v), 2) for v in plot_df[y_col].tolist()]
 
                 chart_html = build_chart_html(labels, values, y_col, chart_type)
-                components.html(chart_html, height=500, scrolling=False)
+                iframe_height = 740 if chart_type in ("Doughnut", "Polar Area", "Radar") else 660
+                components.html(chart_html, height=iframe_height, scrolling=False)
 
         # ── DOWNLOAD ───────────────────────────────────────────────────────────
-        with tab3:
-            csv = df.to_csv(index=False).encode("utf-8")
-            st.download_button(
-                "⬇️ Download CSV",
-                data=csv,
-                file_name="query_results.csv",
-                mime="text/csv",
-                use_container_width=True,
-            )
+        # with tab3:
+        #     csv = df.to_csv(index=False).encode("utf-8")
+        #     st.download_button(
+        #         "⬇️ Download CSV",
+        #         data=csv,
+        #         file_name="query_results.csv",
+        #         mime="text/csv",
+        #         use_container_width=True,
+        #     )
 
 # ── QUERY HISTORY ──────────────────────────────────────────────────────────────
 if st.session_state.history:
