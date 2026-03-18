@@ -3,7 +3,13 @@ import psycopg2.extras
 import pandas as pd
 from typing import Optional, Tuple
 # import streamlit as st
-from constants import HOST, PORT, DATABASE, USER, PASSWORD
+# from constants import HOST, PORT, DATABASE, USER, PASSWORD
+
+HOST = "72.62.197.102"
+PORT = 5432
+DATABASE = "postgres_db"
+USER = "postgres"
+PASSWORD = "642ToVbCSCAVBQvCmjiIQbBQpc9PFsvFWoWYA0c8HkG2eQ3Ppvi5aQFnB1XyMaa4"
 
 # ── DB CONFIG ──────────────────────────────────────────────────────────────────
 DB_CONFIG = {
