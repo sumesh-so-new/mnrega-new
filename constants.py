@@ -10,9 +10,8 @@ import streamlit as st
 # PASSWORD = os.getenv("PASSWORD")
 # OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-HOST = st.secrets["HOST"]
-PORT = st.secrets["PORT"]
-DATABASE = st.secrets["DATABASE"]
-USER =  st.secrets["USER"]
-PASSWORD = st.secrets["PASSWORD"]
-OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
+HOST = "72.62.197.102"
+PORT = "5432"
+DATABASE = "postgres_db"
+USER = "postgres"
+PASSWORD = "642ToVbCSCAVBQvCmjiIQbBQpc9PFsvFWoWYA0c8HkG2eQ3Ppvi5aQFnB1XyMaa4"
