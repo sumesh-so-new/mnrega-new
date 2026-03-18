@@ -1,5 +1,6 @@
-import psycopg2
-import psycopg2.extras
+# import psycopg2
+# import psycopg2.extras
+import psycopg
 import pandas as pd
 from typing import Optional, Tuple
 # import streamlit as st
@@ -81,7 +82,8 @@ You are an expert PostgreSQL query generator. The database contains MGNREGA (Ind
 def get_connection():
     """Return a persistent psycopg2 connection (cached by Streamlit)."""
     try:
-        conn = psycopg2.connect(**DB_CONFIG)
+        # conn = psycopg2.connect(**DB_CONFIG)
+        conn = psycopg.connect(**DB_CONFIG)
         conn.autocommit = True
         return conn
     except Exception as e:
@@ -104,7 +106,9 @@ def run_query(sql: str) -> Tuple[Optional[pd.DataFrame], Optional[str]]:
     except Exception as e:
         # Attempt reconnect once
         try:
-            conn = psycopg2.connect(**DB_CONFIG)
+            # conn = psycopg2.connect(**DB_CONFIG)
+            conn = psycopg.connect(**DB_CONFIG)
+
             conn.autocommit = True
             df = pd.read_sql_query(sql, conn)
             return df, None
