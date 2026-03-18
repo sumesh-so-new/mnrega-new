@@ -6,7 +6,7 @@ import requests
 from db import run_query, get_table_list
 
 # ── CONFIG ─────────────────────────────────────────────────────────────────────
-API_BASE_URL = "http://localhost:8000"
+API_BASE_URL = "https://n10l1x6j53xl7ypp6ar5zzca.vps.boomlive.in/"
 
 PALETTE = [
     "#4C6EF5", "#F76707", "#2F9E44", "#E03131", "#7048E8",
