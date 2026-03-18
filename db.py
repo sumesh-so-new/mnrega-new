@@ -11,7 +11,7 @@ from constants import HOST, PORT, DATABASE, USER, PASSWORD
 DB_CONFIG = {
     "host":     HOST,           # ← change this
     "port":     PORT,           # ← change this``
-    "database": DATABASE,       # ← change this
+    "dbname": DATABASE,       # ← change this
     "user":     USER,            # ← change this
     "password": PASSWORD,        # ← change this
 }
