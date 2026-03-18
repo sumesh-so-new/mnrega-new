@@ -1,9 +1,6 @@
-streamlit==1.33.0
-pandas==2.2.2
-requests==2.31.0
-
-# Database (based on typical PostgreSQL usage)
-psycopg2-binary==2.9.9
-
-# Optional but commonly needed
-sqlalchemy==2.0.30
+streamlit
+pandas
+requests
+psycopg[binary]
+sqlalchemy
+python-dotenv
