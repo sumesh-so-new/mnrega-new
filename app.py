@@ -222,8 +222,8 @@ with st.sidebar:
         st.warning("Could not load table list. Check DB connection.")
 
     st.divider()
-    st.markdown(f"**API:** `{API_BASE_URL}`")
-    st.markdown("**Model:** `gpt-4o`  |  **DB:** PostgreSQL")
+    # st.markdown(f"**API:** `{API_BASE_URL}`")
+    # st.markdown("**Model:** `gpt-4o`  |  **DB:** PostgreSQL")
 
 # ── SESSION STATE INIT ─────────────────────────────────────────────────────────
 for key, default in {
@@ -309,12 +309,12 @@ if st.session_state.run_query_flag:
 if st.session_state.current_error:
     st.error(st.session_state.current_error)
 
-if st.session_state.current_sql:
-    st.subheader("📝 Generated SQL")
-    st.markdown(
-        f'<div class="sql-box">{st.session_state.current_sql}</div>',
-        unsafe_allow_html=True,
-    )
+# if st.session_state.current_sql:
+#     st.subheader("📝 Generated SQL")
+#     st.markdown(
+#         f'<div class="sql-box">{st.session_state.current_sql}</div>',
+#         unsafe_allow_html=True,
+#     )
 
 if st.session_state.current_df is not None:
     df        = st.session_state.current_df
