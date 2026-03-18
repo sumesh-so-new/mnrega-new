@@ -189,7 +189,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── HEADER ─────────────────────────────────────────────────────────────────────
-st.title("🔍 MGNREGA Text-to-SQL Explorer")
+st.title("🔍 MGNREGA ANALYSIS")
 st.caption("Ask questions in plain English — get live data from your PostgreSQL database.")
 
 # ── SIDEBAR ────────────────────────────────────────────────────────────────────
