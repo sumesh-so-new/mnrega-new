@@ -3,7 +3,7 @@
 import psycopg
 import pandas as pd
 from typing import Optional, Tuple
-# import streamlit as st
+import streamlit as st
 # from constants import HOST, PORT, DATABASE, USER, PASSWORD
 
 HOST = "72.62.197.102"
